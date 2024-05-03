@@ -10,6 +10,8 @@ Currently it allows to create secrets only.
 $ cargo build --release
 ```
 
+The binary file should be in `target/release/ahasecret`.
+
 # Usage
 
 ```bash

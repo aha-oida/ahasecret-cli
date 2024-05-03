@@ -1,7 +1,7 @@
 The AHA-Secret Command-Line Client
 ----------------------------------
 
-This tool is a command-line client for [aha-secret)(https://github.com/aha-oida/aha-secret).
+This tool is a command-line client for [aha-secret](https://github.com/aha-oida/aha-secret).
 Currently it allows to create secrets only.
 
 # Build

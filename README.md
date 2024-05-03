@@ -15,7 +15,7 @@ The binary file should be in `target/release/ahasecret`.
 # Usage
 
 ```bash
-$ echo "hello world" | target/debug/ahasecret --url https://URL.TO.AHA.SECRET
+$ echo "hello world" | target/release/ahasecret --url https://URL.TO.AHA.SECRET
 ```
 
 # Parameters

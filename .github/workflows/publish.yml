@@ -31,10 +31,6 @@ jobs:
         shell: bash
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      - name: Install dependencies
-        shell: bash
-        run: sudo apt update && sudo apt install -y libssl-dev
-
       - name: Install Rust
         # Or @nightly if you want
         uses: dtolnay/rust-toolchain@stable
@@ -42,6 +38,10 @@ jobs:
         with:
           # Make Rust compile to our target (defined in the matrix)
           targets: ${{ matrix.target }}
+
+      - name: Install dependencies
+        run: |
+          ${{ matrix.packages_install }}
 
       - name: Build
         uses: actions-rs/cargo@v1

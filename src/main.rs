@@ -2,6 +2,8 @@ use clap::Parser;
 use std::io::{self, Read};
 use paris::error;
 use paris::info;
+use linkify::{LinkFinder};
+
 
 /*
  * Currently the backend allows max 10000 characters.
@@ -17,7 +19,7 @@ pub mod ahasecret;
 struct Config {
     /// The url to aha-secret
     #[arg(short,long)]
-    url: String,
+    url: Option<String>,
     /// Retention time to keep the secret
     #[arg(short, long, default_value = "7d")]
     retention: String,
@@ -32,12 +34,43 @@ struct Config {
     force: bool,
 }
 
+fn read_bytewise_from_stdin(buffer: &mut Vec::<u8>) {
+    let mut counter = 0;
+    let stdin = io::stdin();
+    for byte in stdin.bytes() {
+        if counter >= MAX_TEXT_LENGTH {
+            error!("Input must be smaller than {} bytes", MAX_TEXT_LENGTH);
+            std::process::exit(1)
+        }
+        buffer.push(byte.unwrap());
+        counter = counter + 1;
+    }
+}
+
+fn read_url_from_stdin() -> String {
+    let mut buffer = String::new();
+    let stdin = io::stdin();
+    stdin.read_line(&mut buffer)
+        .unwrap_or_else(|e| {
+            error!("Read url from stdin failed: {}", e);
+            std::process::exit(1);
+        });
+
+    let finder = LinkFinder::new();
+    let links: Vec<_> = finder.links(buffer.as_str()).collect();
+
+    if links.len() < 1 {
+        error!("Unable to find url in provided input(stdin)");
+        std::process::exit(1);
+    }
+
+    return String::from(links[0].as_str());
+}
+
 fn main() {
     let args = Config::parse();
 
     let mut buffer = Vec::<u8>::with_capacity(MAX_TEXT_LENGTH);
-    let stdin = io::stdin();
-    let mut counter = 0;
 
     let minutes: u32 = match ahasecret::utils::timeconvert(&args.retention) {
         Ok(num) => num,
@@ -48,23 +81,31 @@ fn main() {
     };
 
     if args.decrypt {
-        ahasecret::decrypt::reveal(args.url, args.verbose, args.force);
+        let url = match args.url {
+            Some(x) => x,
+            None => {
+                read_url_from_stdin()
+            }
+        };
+
+        ahasecret::decrypt::reveal(url, args.verbose, args.force);
     }
     else {
-        for byte in stdin.bytes() {
-            if counter >= MAX_TEXT_LENGTH {
-                error!("Input must be smaller than {} bytes", MAX_TEXT_LENGTH);
+        read_bytewise_from_stdin(&mut buffer);
+
+        let url = match args.url {
+            Some(x) => x,
+            None => {
+                error!("Url is required for encryption");
                 std::process::exit(1)
             }
-            buffer.push(byte.unwrap());
-            counter = counter + 1;
-        }
+        };
 
         if args.verbose {
             info!("Input length: {} bytes", buffer.len());
         }
 
         let encrypted = ahasecret::encrypt::encrypt(buffer, args.verbose);
-        ahasecret::encrypt::send(encrypted, args.url, minutes, args.verbose);
+        ahasecret::encrypt::send(encrypted, url, minutes, args.verbose);
     }
 }

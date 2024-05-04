@@ -23,7 +23,7 @@ $ echo "hello world" | target/release/ahasecret --url https://URL.TO.AHA.SECRET
 Decrypt:
 
 ```bash
-$ target/release/ahasecret --url https://URL.TO.AHA.SECRET/bins/UG2iBBJ9ZaL4rKUJ5U6JpUuJ#2D0isKulzThyZN2JvlDUd3Hmj6+j3uqdrfNRMF1uzmQ=&FX0Rb1580s7MNvMx
+$ target/release/ahasecret -d --url "https://URL.TO.AHA.SECRET/bins/UG2iBBJ9ZaL4rKUJ5U6JpUuJ#2D0isKulzThyZN2JvlDUd3Hmj6+j3uqdrfNRMF1uzmQ=&FX0Rb1580s7MNvMx"
 ```
 
 # Parameters

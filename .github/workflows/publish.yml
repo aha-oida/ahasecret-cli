@@ -33,7 +33,7 @@ jobs:
 
       - name: Install dependencies
         shell: bash
-        run: apt update && apt install -y libssl-dev
+        run: sudo apt update && sudo apt install -y libssl-dev
 
       - name: Install Rust
         # Or @nightly if you want

@@ -1,12 +1,20 @@
 use scraper::{Html, Selector};
-use paris::{info, error};
+use paris::{info, warn, error};
 use url::Url;
+use serde::{Deserialize};
+use serde_json;
 
 #[derive(Debug)]
 pub struct AhaClient {
     pub client: reqwest::blocking::Client,
     token: String,
     verbose: bool
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Bin {
+    pub id: String,
+    pub url: String
 }
 
 impl AhaClient {
@@ -67,6 +75,37 @@ impl AhaClient {
         return res.text().unwrap();
     }
 
+    pub fn store_secret(&mut self, url: &str, cipher: &str, retention: u32) -> String {
+        let encoded_data: String = form_urlencoded::Serializer::new(String::new())
+            .append_pair("bin[payload]", cipher)
+            .append_pair("retention", retention.to_string().as_str())
+            .append_pair("authenticity_token", self.token.as_str())
+            .finish();
+    
+        let res = self.client.post(url)
+            .body(encoded_data)
+            .send()
+            .unwrap_or_else(|e| {
+                error!("Sending data failed: {}", e);
+                std::process::exit(1);
+            });
+    
+        let status = res.status();
+    
+        if ! status.is_success() {
+            error!("Warning status code {}: maybe the message was to long", status.as_str());
+            warn!("Length of encrypted message: {} bytes", cipher.len());
+            std::process::exit(1)
+        }
+    
+        let jres: Bin = serde_json::from_str(res.text().unwrap().as_str())
+            .unwrap_or_else(|e| {
+                error!("Parsing JSON failed: {}", e);
+                std::process::exit(1);
+            });
+
+        return jres.id;
+    }
 }
 
 

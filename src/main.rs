@@ -67,6 +67,6 @@ fn main() {
         }
 
         let encrypted = ahasecret::encrypt::encrypt(buffer, verbose);
-        ahasecret::encrypt::send(encrypted, args.url, minutes);
+        ahasecret::encrypt::send(encrypted, args.url, minutes, verbose);
     }
 }

@@ -66,6 +66,7 @@ dependencies = [
  "scraper",
  "serde",
  "serde_json",
+ "url",
 ]
 
 [[package]]

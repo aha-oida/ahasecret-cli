@@ -23,7 +23,10 @@ struct Config {
     retention: String,
     /// Verbose output
     #[arg(short,long)]
-    verbose: bool
+    verbose: bool,
+    /// Decrypt
+    #[arg(short,long)]
+    decrypt: bool
 }
 
 fn main() {
@@ -42,20 +45,28 @@ fn main() {
         }
     };
 
-    for byte in stdin.bytes() {
-        if counter >= MAX_TEXT_LENGTH {
-            error!("Input must be smaller than {} bytes", MAX_TEXT_LENGTH);
-            std::process::exit(1)
-        }
-        buffer.push(byte.unwrap());
-        counter = counter + 1;
-    }
-
     if args.verbose {
         verbose = true;
-        info!("Input length: {} bytes", buffer.len());
     }
 
-    let encrypted = ahasecret::encrypt::encrypt(buffer, verbose);
-    ahasecret::encrypt::send(encrypted, args.url, minutes);
+    if args.decrypt {
+        ahasecret::decrypt::decrypt(args.url, verbose);
+    }
+    else {
+        for byte in stdin.bytes() {
+            if counter >= MAX_TEXT_LENGTH {
+                error!("Input must be smaller than {} bytes", MAX_TEXT_LENGTH);
+                std::process::exit(1)
+            }
+            buffer.push(byte.unwrap());
+            counter = counter + 1;
+        }
+
+        if verbose {
+            info!("Input length: {} bytes", buffer.len());
+        }
+
+        let encrypted = ahasecret::encrypt::encrypt(buffer, verbose);
+        ahasecret::encrypt::send(encrypted, args.url, minutes);
+    }
 }

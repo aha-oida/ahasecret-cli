@@ -16,3 +16,4 @@ serde_json = { version = "1.0.116" }
 serde = { version = "1.0.200", features = ["derive"] }
 regex = { version = "1.10.4" }
 paris = { version = "1.5.15", features = ["macros"] }
+url = "2.5.0"

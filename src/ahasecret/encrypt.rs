@@ -1,5 +1,5 @@
 use std::str;
-use paris::{info, warn, error};
+use paris::{info, error};
 use base64::{engine::general_purpose, Engine as _};
 use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, OsRng},

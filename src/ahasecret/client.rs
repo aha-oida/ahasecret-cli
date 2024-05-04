@@ -17,6 +17,11 @@ pub struct Bin {
     pub url: String
 }
 
+#[derive(Deserialize, Debug)]
+pub struct CryptBin {
+    pub payload: String
+}
+
 impl AhaClient {
 
     pub fn new(verbose: bool) -> Self {
@@ -72,7 +77,21 @@ impl AhaClient {
                 error!("Request failed: {}", e);
                 std::process::exit(1);
             });
-        return res.text().unwrap();
+
+        let status = res.status();
+    
+        if ! status.is_success() {
+            error!("Warning status code {}: Revealing the secret failed", status.as_str());
+            std::process::exit(1)
+        }
+    
+        let jres: CryptBin = serde_json::from_str(res.text().unwrap().as_str())
+            .unwrap_or_else(|e| {
+                error!("Parsing JSON failed: {}", e);
+                std::process::exit(1);
+            });
+
+        return jres.payload;
     }
 
     pub fn store_secret(&mut self, url: &str, cipher: &str, retention: u32) -> String {

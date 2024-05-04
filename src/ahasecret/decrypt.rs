@@ -1,6 +1,11 @@
 use paris::{info, warn, error};
 use url::Url;
-use std::io::Write;
+use std::io::{self, Write};
+use base64::{engine::general_purpose::STANDARD, Engine as _};
+use aes_gcm::{
+    aead::{Aead, KeyInit},
+    Aes256Gcm, Key, Nonce
+};
 
 use crate::ahasecret::client::AhaClient;
 
@@ -55,8 +60,8 @@ fn parse_decrypt_url(url: String, verbose: bool) -> ParsedUrl {
         }); 
 
     let parsed = ParsedUrl {
-        key: String::from(secret_parts[0]),
-        nonce: String::from(secret_parts[1]),
+        key: String::from(secret_parts[0]).replace("\\", ""),
+        nonce: String::from(secret_parts[1]).replace("\\", ""),
         path: String::from(parsed_url.path()),
         bin_url: String::from(bin.as_str())
     };
@@ -89,15 +94,54 @@ fn choose() -> bool {
     }
 }
 
+fn decrypt(parsed_url: ParsedUrl, payload: String) {
+    let key = STANDARD.decode(parsed_url.key)
+        .unwrap_or_else(|e| {
+            error!("Failed to b64-decode key: {}", e);
+            std::process::exit(1);
+        });
 
-pub fn decrypt(url: String, verbose: bool) {
+    let vnonce = STANDARD.decode(parsed_url.nonce)
+        .unwrap_or_else(|e| {
+            error!("Failed to b64-decode nonce: {}", e);
+            std::process::exit(1);
+        });
+
+    let nonce = Nonce::from_slice(&vnonce);
+    let plaintext = STANDARD.decode(payload)
+        .unwrap_or_else(|e| {
+            error!("Failed to b64-decode payload: {}", e);
+            std::process::exit(1);
+        });
+
+    let key = Key::<Aes256Gcm>::from_slice(&key);
+    let cipher = Aes256Gcm::new(&key);
+    let plaintext = cipher.decrypt(&nonce, plaintext.as_ref())
+        .unwrap_or_else(|e| {
+            error!("Failed to decrypt payload: {}", e);
+            std::process::exit(1);
+        });
+
+    io::stdout().write(&plaintext)
+        .unwrap_or_else(|e| {
+            error!("Failed to write to stdout: {}", e);
+            std::process::exit(1);
+        });
+
+    io::stdout().flush()
+        .unwrap_or_else(|e| {
+            error!("Failed to flush stdout: {}", e);
+            std::process::exit(1);
+        });
+}
+
+pub fn reveal(url: String, verbose: bool) {
     let mut ahaclient = AhaClient::new(verbose);
     let parsed = parse_decrypt_url(url, verbose);
     ahaclient.fetch_token(parsed.bin_url.clone());
 
     choose(); 
 
-    let body = ahaclient.reveal(parsed.bin_url);
-    println!("RESULT: {:?}", body);
-
+    let payload = ahaclient.reveal(parsed.bin_url.clone());
+    decrypt(parsed, payload);
 }

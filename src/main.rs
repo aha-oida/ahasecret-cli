@@ -50,7 +50,7 @@ fn main() {
     }
 
     if args.decrypt {
-        ahasecret::decrypt::decrypt(args.url, verbose);
+        ahasecret::decrypt::reveal(args.url, verbose);
     }
     else {
         for byte in stdin.bytes() {

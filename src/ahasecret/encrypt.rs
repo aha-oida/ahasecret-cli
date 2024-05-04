@@ -1,6 +1,6 @@
 use std::str;
 use paris::{info, error};
-use base64::{engine::general_purpose, Engine as _};
+use base64::{engine::general_purpose::STANDARD, Engine as _};
 use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, OsRng},
     Aes256Gcm
@@ -26,9 +26,9 @@ pub fn encrypt(plaintext: Vec<u8>, verbose: bool) -> Encrypted {
         });
 
     let encrypted = Encrypted {
-        key: general_purpose::STANDARD.encode(&key),
-        nonce: general_purpose::STANDARD.encode(&nonce),
-        cipher: general_purpose::STANDARD.encode(&encrypted_buf)
+        key: STANDARD.encode(&key),
+        nonce: STANDARD.encode(&nonce),
+        cipher: STANDARD.encode(&encrypted_buf)
     };
 
     if verbose {

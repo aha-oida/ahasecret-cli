@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4", features = ["derive", "color", "help", "usage", "suggestions"] }
-aes-gcm = { version = "0.10.3" }
+aes-gcm = { version = "0.10.3", features = ["aes"] }
 base64 = { version = "0.22.1" }
 reqwest = { version = "0.12.4", features = ["blocking", "charset", "cookies"] }
 scraper = { version = "0.19.0" }

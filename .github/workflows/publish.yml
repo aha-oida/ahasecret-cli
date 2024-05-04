@@ -32,7 +32,7 @@ jobs:
 
       - name: Install libssl-dev
         shell: bash
-        run: lsb_release -a | grep -i ubuntu && $(sudo apt update && sudo apt install -y libssl-dev)
+        run: cat /etc/os-release | grep -i ubuntu && $(sudo apt update && sudo apt install -y libssl-dev)
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable

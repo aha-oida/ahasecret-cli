@@ -24,9 +24,12 @@ struct Config {
     /// Verbose output
     #[arg(short,long)]
     verbose: bool,
-    /// Decrypt
+    /// Decrypt using a URL
     #[arg(short,long)]
-    decrypt: bool
+    decrypt: bool,
+    /// Force and do not ask questions.
+    #[arg(short,long)]
+    force: bool,
 }
 
 fn main() {
@@ -35,7 +38,6 @@ fn main() {
     let mut buffer = Vec::<u8>::with_capacity(MAX_TEXT_LENGTH);
     let stdin = io::stdin();
     let mut counter = 0;
-    let mut verbose = false;
 
     let minutes: u32 = match ahasecret::utils::timeconvert(&args.retention) {
         Ok(num) => num,
@@ -45,12 +47,8 @@ fn main() {
         }
     };
 
-    if args.verbose {
-        verbose = true;
-    }
-
     if args.decrypt {
-        ahasecret::decrypt::reveal(args.url, verbose);
+        ahasecret::decrypt::reveal(args.url, args.verbose, args.force);
     }
     else {
         for byte in stdin.bytes() {
@@ -62,11 +60,11 @@ fn main() {
             counter = counter + 1;
         }
 
-        if verbose {
+        if args.verbose {
             info!("Input length: {} bytes", buffer.len());
         }
 
-        let encrypted = ahasecret::encrypt::encrypt(buffer, verbose);
-        ahasecret::encrypt::send(encrypted, args.url, minutes, verbose);
+        let encrypted = ahasecret::encrypt::encrypt(buffer, args.verbose);
+        ahasecret::encrypt::send(encrypted, args.url, minutes, args.verbose);
     }
 }

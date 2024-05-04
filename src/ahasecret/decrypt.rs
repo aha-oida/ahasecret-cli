@@ -135,12 +135,14 @@ fn decrypt(parsed_url: ParsedUrl, payload: String) {
         });
 }
 
-pub fn reveal(url: String, verbose: bool) {
+pub fn reveal(url: String, verbose: bool, force: bool) {
     let mut ahaclient = AhaClient::new(verbose);
     let parsed = parse_decrypt_url(url, verbose);
     ahaclient.fetch_token(parsed.bin_url.clone());
 
-    choose(); 
+    if ! force {
+        choose(); 
+    }
 
     let payload = ahaclient.reveal(parsed.bin_url.clone());
     decrypt(parsed, payload);

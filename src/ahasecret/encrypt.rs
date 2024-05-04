@@ -1,4 +1,3 @@
-use std::str;
 use paris::{info, error};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use aes_gcm::{

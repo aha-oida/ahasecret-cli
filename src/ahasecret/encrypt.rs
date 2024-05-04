@@ -19,7 +19,7 @@ pub fn encrypt(plaintext: Vec<u8>, verbose: bool) -> Encrypted {
     let cipher = Aes256Gcm::new(&key);
     let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
 
-    let encrypted_buf = cipher.encrypt(&nonce, str::from_utf8(&plaintext).unwrap().as_ref())
+    let encrypted_buf = cipher.encrypt(&nonce, plaintext.as_ref())
         .unwrap_or_else(|e| {
             error!("Failed to encrypt: {}", e);
             std::process::exit(1);

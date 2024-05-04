@@ -26,6 +26,12 @@ Decrypt:
 $ target/release/ahasecret -d --url "https://URL.TO.AHA.SECRET/bins/UG2iBBJ9ZaL4rKUJ5U6JpUuJ#2D0isKulzThyZN2JvlDUd3Hmj6+j3uqdrfNRMF1uzmQ=&FX0Rb1580s7MNvMx"
 ```
 
+If there is no "--url" parameter for decryption, ahasecret will read possible urls from stdin:
+
+```bash
+$ echo "hello world" | target/release/ahasecret --url https://URL.TO.AHA.SECRET | target/release/ahasecret -d -f
+```
+
 # Parameters
 
 ```

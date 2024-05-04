@@ -16,7 +16,7 @@ jobs:
       matrix:
         include:
           - build: linux
-            os: ubuntu-latest
+            os: ubuntu-22.04
             target: x86_64-unknown-linux-musl
 
           - build: macos
@@ -29,10 +29,6 @@ jobs:
       - name: Store version-string
         shell: bash
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
-      - name: Install libssl-dev
-        shell: bash
-        run: cat /etc/os-release | grep -i ubuntu && $(sudo apt update && sudo apt install -y libssl-dev)
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable

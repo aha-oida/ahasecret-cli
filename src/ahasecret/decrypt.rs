@@ -17,6 +17,11 @@ struct ParsedUrl {
     bin_url: String
 }
 
+fn b64_url_dec(b64str: String) -> String {
+    let tmp = b64str.clone();
+    return tmp.replace("-", "+").replace("_", "/").replace("\\", "");
+}
+
 fn bin_url(mut url: Url, path: &str) -> Result<Url,String> {
     match url.path_segments_mut() {
         Ok(mut path) => {
@@ -60,8 +65,8 @@ fn parse_decrypt_url(url: String, verbose: bool) -> ParsedUrl {
         }); 
 
     let parsed = ParsedUrl {
-        key: String::from(secret_parts[0]).replace("\\", ""),
-        nonce: String::from(secret_parts[1]).replace("\\", ""),
+        key: b64_url_dec(String::from(secret_parts[0])),
+        nonce: b64_url_dec(String::from(secret_parts[1])),
         path: String::from(parsed_url.path()),
         bin_url: String::from(bin.as_str())
     };

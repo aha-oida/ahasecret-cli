@@ -38,9 +38,14 @@ pub fn encrypt(plaintext: Vec<u8>, verbose: bool) -> Encrypted {
     return encrypted;
 }
 
+fn b64_url_enc(b64str: String) -> String {
+    let tmp = b64str.clone();
+    return tmp.replace("+", "-").replace("/", "_");
+}
+
 pub fn send(encrypted: Encrypted, url: String, retention: u32, verbose: bool) {
     let mut ahaclient = AhaClient::new(verbose);
     ahaclient.fetch_token(url.clone());
     let bin_id = ahaclient.store_secret(url.as_str(), encrypted.cipher.as_str(), retention);
-    println!("Visit to decrypt: {}/bins/{}#{}&{}", url, bin_id, encrypted.key, encrypted.nonce);
+    println!("Visit to decrypt: {}/bins/{}#{}&{}", url, bin_id, b64_url_enc(encrypted.key), b64_url_enc(encrypted.nonce));
 }

@@ -29,6 +29,9 @@ struct Config {
     /// Decrypt using a URL
     #[arg(short,long)]
     decrypt: bool,
+    /// Use extra password
+    #[arg(short, long)]
+    password: Option<String>,
     /// Force and do not ask questions.
     #[arg(short,long)]
     force: bool,
@@ -69,6 +72,7 @@ fn read_url_from_stdin() -> String {
 
 fn main() {
     let args = Config::parse();
+    let mut extra_pw = false;
 
     let mut buffer = Vec::<u8>::with_capacity(MAX_TEXT_LENGTH);
 
@@ -105,7 +109,14 @@ fn main() {
             info!("Input length: {} bytes", buffer.len());
         }
 
+        if args.password.is_some() {
+            let extrapw = args.password.unwrap();
+            println!("password: {}", extrapw);
+            buffer = ahasecret::encrypt::encrypt_with_pass(buffer, extrapw, args.verbose);
+            extra_pw = true;
+        }
+
         let encrypted = ahasecret::encrypt::encrypt(buffer, args.verbose);
-        ahasecret::encrypt::send(encrypted, url, minutes, args.verbose);
+        ahasecret::encrypt::send(encrypted, url, extra_pw, minutes, args.verbose);
     }
 }

@@ -19,3 +19,6 @@ paris = { version = "1.5.15", features = ["macros"] }
 url = "2.5.0"
 linkify = "0.10.0"
 openssl = { version = "0.10.64", features = ["vendored"] } 
+pbkdf2 = "0.12.2"
+rand_core = { version = "0.6.4" }
+sha2 = "0.10.8"

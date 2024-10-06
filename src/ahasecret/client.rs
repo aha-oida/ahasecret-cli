@@ -94,9 +94,14 @@ impl AhaClient {
         return jres.payload;
     }
 
-    pub fn store_secret(&mut self, url: &str, cipher: &str, retention: u32) -> String {
+    pub fn store_secret(&mut self, url: &str, cipher: &str, extra_pw: bool, retention: u32) -> String {
+        let mut has_pw = String::from("false");
+        if extra_pw {
+            has_pw = String::from("true");
+        }
         let encoded_data: String = form_urlencoded::Serializer::new(String::new())
             .append_pair("bin[payload]", cipher)
+            .append_pair("bin[has_password]", has_pw.as_str())
             .append_pair("retention", retention.to_string().as_str())
             .append_pair("authenticity_token", self.token.as_str())
             .finish();

@@ -19,7 +19,8 @@ pub struct Bin {
 
 #[derive(Deserialize, Debug)]
 pub struct CryptBin {
-    pub payload: String
+    pub payload: String,
+    pub has_password: bool
 }
 
 impl AhaClient {
@@ -61,7 +62,7 @@ impl AhaClient {
         return self.token.clone();
     }
 
-    pub fn reveal(&mut self, url: String) -> String {
+    pub fn reveal(&mut self, url: String) -> CryptBin {
         let mut patch_base: String = url.clone(); 
         patch_base.push_str("/reveal");
     
@@ -91,7 +92,7 @@ impl AhaClient {
                 std::process::exit(1);
             });
 
-        return jres.payload;
+        return jres;
     }
 
     pub fn store_secret(&mut self, url: &str, cipher: &str, extra_pw: bool, retention: u32) -> String {

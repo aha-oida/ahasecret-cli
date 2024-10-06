@@ -3,9 +3,12 @@ use url::Url;
 use std::io::{self, Write};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use aes_gcm::{
-    aead::{Aead, KeyInit},
+    aead::{Aead, KeyInit, Error},
     Aes256Gcm, Key, Nonce
 };
+use serde::{Deserialize};
+use pbkdf2::{pbkdf2_hmac_array};
+use sha2::{Sha256};
 
 use crate::ahasecret::client::AhaClient;
 
@@ -15,6 +18,13 @@ struct ParsedUrl {
     nonce: String,
     path: String,
     bin_url: String
+}
+
+#[derive(Deserialize, Debug)]
+struct PWSecret {
+    iv: String,
+    cipher: String,
+    salt: String,
 }
 
 fn b64_url_dec(b64str: String) -> String {
@@ -99,7 +109,53 @@ fn choose() -> bool {
     }
 }
 
-fn decrypt(parsed_url: ParsedUrl, payload: String) {
+fn decrypt_with_pw(payload: Vec<u8>, password: String) -> Result<(), Error> {
+    let n = 100_000;
+    let pwsec: PWSecret = serde_json::from_slice(&payload).unwrap();
+    let salt = STANDARD.decode(pwsec.salt)
+        .unwrap_or_else(|e| {
+            error!("Failed to b64-decode salt: {}", e);
+            std::process::exit(1);
+    });
+
+    let vnonce = STANDARD.decode(pwsec.iv)
+        .unwrap_or_else(|e| {
+            error!("Failed to b64-decode nonce: {}", e);
+            std::process::exit(1);
+    });
+
+    let nonce = Nonce::from_slice(&vnonce);
+
+    let encrypted = STANDARD.decode(pwsec.cipher)
+        .unwrap_or_else(|e| {
+            error!("Failed to b64-decode cipher: {}", e);
+            std::process::exit(1);
+    });
+
+    let key_slice = pbkdf2_hmac_array::<Sha256, 32>(password.as_str().as_bytes(), &salt, n);
+    let cipher = Aes256Gcm::new_from_slice(&key_slice).unwrap_or_else(|e| {
+        error!("encrypt_with_pass could not derive key: {}", e);
+        std::process::exit(1);
+    });
+
+    let plaintext = cipher.decrypt(&nonce, encrypted.as_ref())?;
+
+    io::stdout().write(&plaintext)
+        .unwrap_or_else(|e| {
+            error!("Failed to write to stdout: {}", e);
+            std::process::exit(1);
+        });
+
+    io::stdout().flush()
+        .unwrap_or_else(|e| {
+            error!("Failed to flush stdout: {}", e);
+            std::process::exit(1);
+        });
+
+    Ok(())
+}
+
+fn decrypt(parsed_url: ParsedUrl, payload: String) -> Vec<u8> {
     let key = STANDARD.decode(parsed_url.key)
         .unwrap_or_else(|e| {
             error!("Failed to b64-decode key: {}", e);
@@ -127,17 +183,7 @@ fn decrypt(parsed_url: ParsedUrl, payload: String) {
             std::process::exit(1);
         });
 
-    io::stdout().write(&plaintext)
-        .unwrap_or_else(|e| {
-            error!("Failed to write to stdout: {}", e);
-            std::process::exit(1);
-        });
-
-    io::stdout().flush()
-        .unwrap_or_else(|e| {
-            error!("Failed to flush stdout: {}", e);
-            std::process::exit(1);
-        });
+    return plaintext;
 }
 
 pub fn reveal(url: String, verbose: bool, force: bool) {
@@ -149,6 +195,36 @@ pub fn reveal(url: String, verbose: bool, force: bool) {
         choose(); 
     }
 
-    let payload = ahaclient.reveal(parsed.bin_url.clone());
-    decrypt(parsed, payload);
+    let bin = ahaclient.reveal(parsed.bin_url.clone());
+    let dec_msg = decrypt(parsed, bin.payload);
+
+    if bin.has_password {
+        println!("This secret is passwort-protected!");
+        loop {
+            print!("[+] Enter password: ");
+            let mut password = String::new();
+            io::stdout().flush().unwrap();
+            io::stdin().read_line(&mut password).expect("Failed to read line.");
+            password.truncate(password.len() - 1);
+            match decrypt_with_pw(dec_msg.clone(), password){
+                Ok(_some) => break,
+                Err(_) => { 
+                    println!("Decryption failed. Is the password correct?");
+                    continue 
+                }
+            };
+        }
+    } else {
+        io::stdout().write(&dec_msg)
+            .unwrap_or_else(|e| {
+                error!("Failed to write to stdout: {}", e);
+                std::process::exit(1);
+            });
+
+        io::stdout().flush()
+            .unwrap_or_else(|e| {
+                error!("Failed to flush stdout: {}", e);
+                std::process::exit(1);
+            });
+    }
 }

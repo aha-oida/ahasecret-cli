@@ -1,4 +1,5 @@
 use regex::Regex;
+use std::io::{self, Write};
 
 pub fn timeconvert(time: &String) -> Result<u32, String> {
     let re = Regex::new(r"(?P<value>\d+)(?P<unit>[dmh]*)").unwrap();
@@ -48,4 +49,14 @@ pub fn timeconvert(time: &String) -> Result<u32, String> {
     } else {
         Ok(value)
     }
+}
+
+pub fn read_password_from_stdin() -> String {
+    print!("[+] Enter password: ");
+    io::stdout().flush().unwrap();
+    let mut password = String::new();
+    io::stdin().read_line(&mut password).expect("Failed to read line.");
+    password.truncate(password.len() - 1);
+
+    return password;
 }

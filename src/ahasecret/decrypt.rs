@@ -11,6 +11,7 @@ use pbkdf2::{pbkdf2_hmac_array};
 use sha2::{Sha256};
 
 use crate::ahasecret::client::AhaClient;
+use crate::ahasecret::utils;
 
 #[derive(Debug)]
 struct ParsedUrl {
@@ -201,11 +202,8 @@ pub fn reveal(url: String, verbose: bool, force: bool) {
     if bin.has_password {
         println!("This secret is passwort-protected!");
         loop {
-            print!("[+] Enter password: ");
-            let mut password = String::new();
-            io::stdout().flush().unwrap();
-            io::stdin().read_line(&mut password).expect("Failed to read line.");
-            password.truncate(password.len() - 1);
+            let password = utils::read_password_from_stdin();
+            
             match decrypt_with_pw(dec_msg.clone(), password){
                 Ok(_some) => break,
                 Err(_) => { 

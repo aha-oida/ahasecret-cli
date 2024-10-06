@@ -31,7 +31,7 @@ struct Config {
     decrypt: bool,
     /// Use extra password
     #[arg(short, long)]
-    password: Option<String>,
+    password: bool,
     /// Force and do not ask questions.
     #[arg(short,long)]
     force: bool,
@@ -97,6 +97,20 @@ fn main() {
     else {
         read_bytewise_from_stdin(&mut buffer);
 
+        /* 
+         * do not put this block above read_bytewise_from_stdin
+         * this would mess up the encryption
+         */
+        if args.password {
+            if args.force {
+                error!("Interactive password and force can not be used together");
+                std::process::exit(1)
+            }
+            let custompw = ahasecret::utils::read_password_from_stdin();
+            buffer = ahasecret::encrypt::encrypt_with_pass(buffer, custompw, args.verbose);
+            extra_pw = true;
+        }
+
         let url = match args.url {
             Some(x) => x,
             None => {
@@ -107,13 +121,6 @@ fn main() {
 
         if args.verbose {
             info!("Input length: {} bytes", buffer.len());
-        }
-
-        if args.password.is_some() {
-            let extrapw = args.password.unwrap();
-            println!("password: {}", extrapw);
-            buffer = ahasecret::encrypt::encrypt_with_pass(buffer, extrapw, args.verbose);
-            extra_pw = true;
         }
 
         let encrypted = ahasecret::encrypt::encrypt(buffer, args.verbose);

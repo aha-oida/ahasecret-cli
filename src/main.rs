@@ -29,6 +29,9 @@ struct Config {
     /// Decrypt using a URL
     #[arg(short,long)]
     decrypt: bool,
+    /// Use extra password
+    #[arg(short, long)]
+    password: bool,
     /// Force and do not ask questions.
     #[arg(short,long)]
     force: bool,
@@ -69,6 +72,7 @@ fn read_url_from_stdin() -> String {
 
 fn main() {
     let args = Config::parse();
+    let mut extra_pw = false;
 
     let mut buffer = Vec::<u8>::with_capacity(MAX_TEXT_LENGTH);
 
@@ -93,6 +97,20 @@ fn main() {
     else {
         read_bytewise_from_stdin(&mut buffer);
 
+        /* 
+         * do not put this block above read_bytewise_from_stdin
+         * this would mess up the encryption
+         */
+        if args.password {
+            if args.force {
+                error!("Interactive password and force can not be used together");
+                std::process::exit(1)
+            }
+            let custompw = ahasecret::utils::read_password_from_stdin();
+            buffer = ahasecret::encrypt::encrypt_with_pass(buffer, custompw, args.verbose);
+            extra_pw = true;
+        }
+
         let url = match args.url {
             Some(x) => x,
             None => {
@@ -106,6 +124,6 @@ fn main() {
         }
 
         let encrypted = ahasecret::encrypt::encrypt(buffer, args.verbose);
-        ahasecret::encrypt::send(encrypted, url, minutes, args.verbose);
+        ahasecret::encrypt::send(encrypted, url, extra_pw, minutes, args.verbose);
     }
 }

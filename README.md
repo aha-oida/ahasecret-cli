@@ -20,6 +20,13 @@ Encrypt:
 $ echo "hello world" | target/release/ahasecret --url https://URL.TO.AHA.SECRET
 ```
 
+Instead of passing `--url` via command line parameter it is also possible to set an environment variable `AHA_URL`:
+
+```bash
+$ export AHA_URL=https://URL.TO.AHA.SECRET
+$ echo "hello world" | target/release/ahasecret
+```
+
 Decrypt:
 
 ```bash

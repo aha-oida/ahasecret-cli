@@ -2,6 +2,7 @@ use clap::Parser;
 use std::io::{self, Read};
 use paris::error;
 use paris::info;
+use std::env;
 use linkify::{LinkFinder};
 
 
@@ -111,13 +112,22 @@ fn main() {
             extra_pw = true;
         }
 
-        let url = match args.url {
+/*        let url = match args.url {
             Some(x) => x,
             None => {
                 error!("Url is required for encryption");
                 std::process::exit(1)
             }
         };
+*/
+        let url = args.url.unwrap_or_else(|| {
+            env::var_os("AHA_URL")
+                .and_then(|s| s.into_string().ok())
+                .unwrap_or_else(|| {
+                    error!("Url is required for encryption");
+                    std::process::exit(1);
+                })
+        });
 
         if args.verbose {
             info!("Input length: {} bytes", buffer.len());

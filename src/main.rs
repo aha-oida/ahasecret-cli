@@ -112,14 +112,6 @@ fn main() {
             extra_pw = true;
         }
 
-/*        let url = match args.url {
-            Some(x) => x,
-            None => {
-                error!("Url is required for encryption");
-                std::process::exit(1)
-            }
-        };
-*/
         let url = args.url.unwrap_or_else(|| {
             env::var_os("AHA_URL")
                 .and_then(|s| s.into_string().ok())

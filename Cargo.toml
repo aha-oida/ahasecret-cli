@@ -9,16 +9,16 @@ edition = "2021"
 clap = { version = "4", features = ["derive", "color", "help", "usage", "suggestions"] }
 aes-gcm = { version = "0.10.3", features = ["aes"] }
 base64 = { version = "0.22.1" }
-reqwest = { version = "0.12.4", features = ["blocking", "charset", "cookies"] }
-scraper = { version = "0.19.0" }
-form_urlencoded = { version = "1.2.1" }
-serde_json = { version = "1.0.116" }
-serde = { version = "1.0.200", features = ["derive"] }
-regex = { version = "1.10.4" }
+reqwest = { version = "0.12.28", features = ["blocking", "charset", "cookies"] }
+scraper = { version = "0.19.1" }
+form_urlencoded = { version = "1.2.2" }
+serde_json = { version = "1.0.154" }
+serde = { version = "1.0.229", features = ["derive"] }
+regex = { version = "1.13.1" }
 paris = { version = "1.5.15", features = ["macros"] }
-url = "2.5.0"
+url = "2.5.8"
 linkify = "0.10.0"
-openssl = { version = "0.10.79", features = ["vendored"] } 
+openssl = { version = "0.10.82", features = ["vendored"] } 
 pbkdf2 = "0.12.2"
 rand_core = { version = "0.6.4" }
-sha2 = "0.10.8"
+sha2 = "0.10.9"

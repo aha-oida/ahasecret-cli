@@ -66,13 +66,13 @@ impl AhaClient {
         let mut patch_base: String = url.clone(); 
         patch_base.push_str("/reveal");
     
-        let mut patch_url = Url::parse(patch_base.as_str()).unwrap();
-        patch_url.query_pairs_mut().append_pair("authenticity_token", self.token.as_str());
+        let patch_url = Url::parse(patch_base.as_str()).unwrap();
         if self.verbose {
             info!("Reveal-URL: {}", patch_url);
         }
 
         let res = self.client.patch(patch_url.as_str())
+            .header("X-CSRF-Token", self.token.as_str())
             .send()
             .unwrap_or_else(|e| {
                 error!("Request failed: {}", e);
@@ -104,11 +104,11 @@ impl AhaClient {
             .append_pair("bin[payload]", cipher)
             .append_pair("bin[has_password]", has_pw.as_str())
             .append_pair("retention", retention.to_string().as_str())
-            .append_pair("authenticity_token", self.token.as_str())
             .finish();
     
         let res = self.client.post(url)
             .body(encoded_data)
+            .header("X-CSRF-Token", self.token.as_str())
             .send()
             .unwrap_or_else(|e| {
                 error!("Sending data failed: {}", e);

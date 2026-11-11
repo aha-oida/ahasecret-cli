@@ -17,6 +17,12 @@ The binary file should be in `target/release/ahasecret`.
 Encrypt:
 
 ```bash
+$ echo "hello world" | target/release/ahasecret
+```
+
+Using a custom aha-secret server:
+
+```bash
 $ echo "hello world" | target/release/ahasecret --url https://URL.TO.AHA.SECRET
 ```
 
@@ -54,6 +60,8 @@ Options:
   -h, --help                   Print help
   -V, --version                Print version 
 ```
+
+**Note that the default url for encryption is https://aha-secret.com**
 
 # License
 

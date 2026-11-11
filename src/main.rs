@@ -116,8 +116,7 @@ fn main() {
             env::var_os("AHA_URL")
                 .and_then(|s| s.into_string().ok())
                 .unwrap_or_else(|| {
-                    error!("Url is required for encryption");
-                    std::process::exit(1);
+                    String::from("https://aha-secret.com")
                 })
         });
 
